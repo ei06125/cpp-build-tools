@@ -1,3 +1,4 @@
+# Copyright (C) ei06125. All Rights Reserved.
 include_guard()
 
 if($ENV{CLION_IDE}) # TODO: Do the same for CLion
@@ -33,45 +34,46 @@ set(CMAKE_LOG_LEVEL_FATAL 7)
 
 # Sets the CMAKE_CURRENT_LOG_LEVEL to the default or command line option
 option(CMAKE_CURRENT_LOG_LEVEL "Set CMake current log level"
-       ${CMAKE_LOG_LEVEL_INFO}
-)
+       ${CMAKE_LOG_LEVEL_INFO})
 
 if(CMAKE_CURRENT_LOG_LEVEL STREQUAL "OFF")
+  message("[CORE][WARNING] CMAKE_CURRENT_LOG_LEVEL not set")
+  message("[CORE][INFO] Defaulting to CMAKE_LOG_LEVEL_INFO")
   set(CMAKE_CURRENT_LOG_LEVEL ${CMAKE_LOG_LEVEL_INFO})
 endif()
 
-function(LogMessage msg log_level)
+function(log_message msg log_level)
   if(NOT ${log_level} LESS CMAKE_CURRENT_LOG_LEVEL)
     message(${msg})
   endif()
 endfunction()
 
-function(LogTrace msg)
-  logmessage(
-    "${ColourBold} [STATUS] ${ColourReset} ${msg}" ${CMAKE_LOG_LEVEL_TRACE}
-  )
-endfunction(LogTrace)
+function(log_trace msg)
+  log_message("${ColourBold}[TRACE]${ColourReset} ${msg}"
+              ${CMAKE_LOG_LEVEL_TRACE})
+endfunction(log_trace)
 
-function(LogDebug msg)
-  logmessage("${Cyan} [DEBUG] ${ColourReset} ${msg}" ${CMAKE_LOG_LEVEL_DEBUG})
-endfunction(LogDebug)
+function(log_debug msg)
+  log_message("${Cyan}[DEBUG]${ColourReset} ${msg}" ${CMAKE_LOG_LEVEL_DEBUG})
+endfunction(log_debug)
 
-function(LogInfo msg)
-  logmessage("${Green} [INFO] ${ColourReset} ${msg}" ${CMAKE_LOG_LEVEL_INFO})
-endfunction(LogInfo)
+function(log_info msg)
+  log_message("${Green}[INFO]${ColourReset} ${msg}" ${CMAKE_LOG_LEVEL_INFO})
+endfunction(log_info)
 
-function(LogWarn msg)
-  logmessage(
-    "${BoldYellow} [WARNING] ${ColourReset} ${msg}" ${CMAKE_LOG_LEVEL_WARNING}
-  )
-endfunction(LogWarn)
+function(log_warn msg)
+  log_message("${BoldYellow}[WARNING]${ColourReset} ${msg}"
+              ${CMAKE_LOG_LEVEL_WARNING})
+endfunction(log_warn)
 
-function(LogError msg)
-  message(SEND_ERROR "${BoldRed} [ERROR] ${ColourReset} ${msg}") # CMAKE_LOG_LEV
+function(log_error msg)
+  message(SEND_ERROR "${BoldRed}[ERROR]${ColourReset} ${msg}") # CMAKE_LOG_LEV
                                                                  # EL_ERROR
-endfunction(LogError)
+endfunction(log_error)
 
-function(LogFatal msg)
-  message(FATAL_ERROR "${BoldRed} [FATAL] ${ColourReset} ${msg} ") # CMAKE_LOG_L
+function(log_fatal msg)
+  message(FATAL_ERROR "${BoldRed}[FATAL]${ColourReset} ${msg} ") # CMAKE_LOG_L
                                                                    # EVEL_FATAL
-endfunction(LogFatal)
+endfunction(log_fatal)
+
+log_info("CMake Version: ${CMAKE_VERSION}")

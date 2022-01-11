@@ -6,6 +6,5 @@ project(
   HOMEPAGE_URL ""
   LANGUAGES NONE)
 
-include(CMakePrintHelpers)
-
-include(BuildTools/cmake/HostSystemInformation.cmake)
+set(ROOT_DIR ${CMAKE_CURRENT_LIST_DIR})
+include(${ROOT_DIR}/cmake/Modules/BuildToolsMain.cmake)

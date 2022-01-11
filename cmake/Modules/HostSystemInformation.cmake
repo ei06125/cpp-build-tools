@@ -1,4 +1,7 @@
-include_guard()
+# Copyright (C) ei06125. All Rights Reserved.
+
+# Provides an include guard for the file currently being processed by CMake.
+include_guard(GLOBAL)
 
 #
 cmake_host_system_information(RESULT NUMBER_OF_LOGICAL_CORES_RESULT
@@ -95,7 +98,8 @@ cmake_host_system_information(RESULT OS_PLATFORM_RESULT QUERY OS_PLATFORM)
 # DEBUG
 # =============================================================================
 
-if(CMAKE_VERBOSE_MAKEFILE)
+if(${CMAKE_CURRENT_LOG_LEVEL} LESS CMAKE_LOG_LEVEL_INFO)
+  include(CMakePrintHelpers)
   cmake_print_variables(NUMBER_OF_LOGICAL_CORES_RESULT)
   cmake_print_variables(NUMBER_OF_PHYSICAL_CORES_RESULT)
   cmake_print_variables(HOSTNAME_RESULT)
