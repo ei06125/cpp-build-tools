@@ -1,5 +1,5 @@
 # Copyright (C) ei06125. All Rights Reserved.
-include_guard()
+include_guard(GLOBAL)
 
 if($ENV{CLION_IDE}) # TODO: Do the same for CLion
 
