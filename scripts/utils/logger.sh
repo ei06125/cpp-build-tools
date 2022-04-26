@@ -70,35 +70,35 @@ function log_message() {
 
 function log_trace() {
     if [[ $CMAKE_CURRENT_LOG_LEVEL -le $CMAKE_LOG_LEVEL_TRACE ]]; then
-        THIS_SCRIPT=$(echo $0 | awk -F "/" '{print $NF}')
-        log_message "$BWhite[TRACE][$THIS_SCRIPT] $1 $Color_Off"
+        THIS_SCRIPT=${0##*/}
+        log_message "$BWhite[$THIS_SCRIPT][TRACE] $1 $Color_Off"
     fi
 }
 
 function log_debug() {
     if [[ $CMAKE_CURRENT_LOG_LEVEL -le $CMAKE_LOG_LEVEL_DEBUG ]]; then
-        THIS_SCRIPT=$(echo $0 | awk -F "/" '{print $NF}')
-        log_message "$Cyan[DEBUG][$THIS_SCRIPT] $1 $Color_Off"
+        THIS_SCRIPT=${0##*/}
+        log_message "$Cyan[$THIS_SCRIPT][DEBUG] $1 $Color_Off"
     fi
 }
 
 function log_info() {
-    THIS_SCRIPT=$(echo $0 | awk -F "/" '{print $NF}')
-    log_message "$Green[INFO ][$THIS_SCRIPT] $1 $Color_Off"
+    THIS_SCRIPT=${0##*/}
+    log_message "$Green[$THIS_SCRIPT][INFO]  $1 $Color_Off"
 }
 
 function log_warn() {
-    THIS_SCRIPT=$(echo $0 | awk -F "/" '{print $NF}')
-    log_message "$Yellow[WARN ][$THIS_SCRIPT] $1 $Color_Off"
+    THIS_SCRIPT=${0##*/}
+    log_message "$Yellow[$THIS_SCRIPT][WARN]  $1 $Color_Off"
 }
 
 function log_error() {
-    THIS_SCRIPT=$(echo $0 | awk -F "/" '{print $NF}')
-    log_message "$Red[ERROR][$THIS_SCRIPT] $1 $Color_Off"
+    THIS_SCRIPT=${0##*/}
+    log_message "$Red[$THIS_SCRIPT][ERROR] $1 $Color_Off"
 }
 
 function log_fatal() {
-    THIS_SCRIPT=$(echo $0 | awk -F "/" '{print $NF}')
-    log_message "$On_Red[FATAL][$THIS_SCRIPT] $1$Color_Off"
+    THIS_SCRIPT=${0##*/}
+    log_message "$On_Red[$THIS_SCRIPT][FATAL] $1$Color_Off"
     exit 1
 }

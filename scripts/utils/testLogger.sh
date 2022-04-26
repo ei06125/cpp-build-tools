@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source $(pwd)/scripts/utils/logger.sh
+source $(pwd)/tools/scripts/utils/logger.sh
 
 while getopts 'v' flag;
 do
