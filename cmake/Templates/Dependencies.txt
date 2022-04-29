@@ -1,0 +1,4 @@
+fmt,https://github.com/fmtlib/fmt.git,8.1.1
+spdlog,https://github.com/gabime/spdlog.git,v1.10.0
+googletest,https://github.com/google/googletest.git,release-1.11.0
+imgui,https://github.com/yagen-cpp/imgui.git,docking
