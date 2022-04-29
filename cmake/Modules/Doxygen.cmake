@@ -34,13 +34,19 @@
 include_guard(GLOBAL)
 
 function(enable_doxygen)
-  option(ENABLE_DOXYGEN "Enable doxygen doc builds of source" OFF)
+  option(ENABLE_DOXYGEN "Enable doxygen doc builds of source" ON)
   if(ENABLE_DOXYGEN)
     set(DOXYGEN_CALLER_GRAPH YES)
     set(DOXYGEN_CALL_GRAPH YES)
     set(DOXYGEN_EXTRACT_ALL YES)
-    find_package(Doxygen REQUIRED dot)
-    doxygen_add_docs(doxygen-docs ${PROJECT_SOURCE_DIR}/docs)
+    set(DOXYGEN_SOURCE_BROWSER YES)
+    set(DOXYGEN_INLINE_SOURCSE YES)
+    set(DOXYGEN_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/www/docs)
+    find_package(Doxygen REQUIRED dot OPTIONAL_COMPONENTS mscgen dia)
+    doxygen_add_docs(
+      doxygen-docs ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/lib
+      ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/tests
+    )
 
   endif()
 endfunction()
