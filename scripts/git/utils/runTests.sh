@@ -9,7 +9,7 @@ git_dir=$(git rev-parse --show-toplevel)
 cd $git_dir 1>runTests.log
 
 # add logger to the scope
-source $(pwd)/tools/scripts/utils/logger.sh
+source $(pwd)/tools/scripts/git/utils/logger.sh
 
 CLEAN_BUILD=0
 

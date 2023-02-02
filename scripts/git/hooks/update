@@ -1,12 +1,15 @@
-#!/bin/sh
+#!/bin/bash
+
+# Cause the script to exit immediately if a command returns a non-zero exit status (indicating an error)
+set -e
 
 # =============================================================================
 # Fun Fact: we can use the following shebang line for cross-compiling:
-# /* #!/bin/sh; C:/Program\ Files/path/to/Git/usr/bin/sh.exe */
+# /* #!/bin/bash; C:/Program\ Files/path/to/Git/usr/bin/sh.exe */
 # according to https://www.youtube.com/watch?v=fMYv6-SZsSo
 # =============================================================================
 
-source $(pwd)/tools/scripts/utils/logger.sh
+source $(pwd)/tools/scripts/git/utils/logger.sh
 
 log_info "Running update hook..."
 

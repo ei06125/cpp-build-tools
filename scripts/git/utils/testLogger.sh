@@ -2,7 +2,7 @@
 
 git_dir=$(git rev-parse --show-toplevel)
 cd $git_dir 1>testLogger.log
-source $(pwd)/tools/scripts/utils/logger.sh 1>testLogger.log
+source $(pwd)/tools/scripts/git/utils/logger.sh 1>testLogger.log
 cd - 1> testLogger.log
 rm testLogger.log
 
