@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # =============================================================================
 # Fun Fact: we can use the following shebang line for cross-compiling:
@@ -6,7 +6,17 @@
 # according to https://www.youtube.com/watch?v=fMYv6-SZsSo
 # =============================================================================
 
+# ============================================================================
+# Script setup
+# ============================================================================
+
+# navigate to project root directory
+git_dir=$(git rev-parse --show-toplevel)
+cd $git_dir 1>pre-commit.log
+# add logger to the scope
 source $(pwd)/tools/scripts/utils/logger.sh
+
+CMAKE_CURRENT_LOG_LEVEL=$CMAKE_LOG_LEVEL_TRACE
 
 log_info "Running pre-commit hook..."
 
@@ -22,40 +32,73 @@ if [[ "$usermail" != *"@$domain" ]]; then
     exit 1
 fi
 
-# We could also check if the username is within a list of names
+# # We could also check if the username is within a list of names
+
+# ============================================================================
+# Apply formatting to all cmake or cpp files that will be committed
+# ============================================================================
+
+log_warn "Apply formatting to all staged cmake or cpp files"
+ALL_STAGED_FILES=`git diff --cached --name-only --diff-filter=ACM`
+for file in ${ALL_STAGED_FILES}
+do
+    filename=$(basename -- "$file")
+    extension=$([[ "$filename" = *.* ]] && echo ".${filename##*.}" || echo '')
+    filename="${filename%.*}"
+    
+    log_debug "filename: $filename"
+    log_debug "extension: $extension"
+    
+    if [[ "$extension" == ".cpp" || "$extension" == ".c" || "$extension" == ".hpp"  || "$extension" == ".h"  ]]; then
+        log_trace "Applying clang-format to file $file"
+        clang-format -i $file
+        elif [[ "$extension" == ".cmake" ]]; then
+        log_trace "Applying cmake-format to file $file"
+        cmake-format -i $file -c .cmake-format.yaml 2>/dev/null
+        elif [[ "$filename" == "CMakeLists" && "$extension" == ".txt" ]]; then
+        log_trace "Applying cmake-format to file $file"
+        cmake-format -i $file -c .cmake-format.yaml 2>/dev/null
+    fi
+    git add $file
+done
+
+# Love ChatGPT
+CLEAN_BUILD=0
+new_staged_cpp_files="$(git diff --cached --name-status | grep -E 'A' | grep -E '.*\.(cpp|h)$')"
+log_debug "new_staged_cpp_files: $new_staged_cpp_files"
+if [ -n "$new_staged_cpp_files" ]; then
+    log_warn "Setting CLEAN_BUILD flag due to new or untracked C++ files"
+    export CLEAN_BUILD=1
+fi
+
+deleted_staged_cpp_files="$(git diff --cached --name-only --diff-filter=D | grep -E '.*\.(cpp|h)$')"
+log_debug "deleted_staged_cpp_files: $deleted_staged_cpp_files"
+if [ -n "$deleted_staged_cpp_files" ]; then
+    log_warn "Setting CLEAN_BUILD flag due to deleted C++ files"
+    export CLEAN_BUILD=1
+fi
 
 # =============================================================================
-# Apply clang-format TODO: and cmake-format
+# Run All Tests
 # =============================================================================
 
-log_info "Applying clang-format..."
-find . -path "./lib/**.hpp" | xargs -I % clang-format -i %
-find . -path "./lib/**.cpp" | xargs -I % clang-format -i %
-find . -path "./src/**.hpp" | xargs -I % clang-format -i %
-find . -path "./src/**.cpp" | xargs -I % clang-format -i %
-find . -path "./tests/**.hpp" | xargs -I % clang-format -i %
-find . -path "./tests/**.cpp" | xargs -I % clang-format -i %
-find . -path "./CMakeLists.txt" | xargs -I % cmake-format -i % -c .cmake-format.yaml 2>/dev/null
-find . -path "./src/**/CMakeLists.txt" | xargs -I % cmake-format -i % -c .cmake-format.yaml 2>/dev/null
-find . -path "./lib/**/CMakeLists.txt" | xargs -I % cmake-format -i % -c .cmake-format.yaml 2>/dev/null
-find . -path "./tests/**/CMakeLists.txt" | xargs -I % cmake-format -i % -c .cmake-format.yaml 2>/dev/null
-log_info "Applying clang-format - DONE"
+if [[ $CLEAN_BUILD != 0 ]]; then
+    $(pwd)/tools/scripts/utils/runTests.sh -f
+else
+    $(pwd)/tools/scripts/utils/runTests.sh
+fi
+
+if [[ "$?" != 0 ]]; then
+    log_error "pre-commit tests - FAILED"
+    exit 1
+else
+    log_info "pre-commit tests - DONE"
+fi
 
 # =============================================================================
-# Generate, Build and Test with cmake
+# Clean up
 # =============================================================================
 
-CMAKE_TOOLCHAIN_FILE_DIR=$(pwd)/tools/vcpkg/scripts/buildsystems
-CMAKE_BINARY_DIR=build/CI/
-CMAKE_BUILD_TYPE=Release
-
-log_trace "Building and Testing..."
-log_info "Generating build system..." && cmake -S . -B $CMAKE_BINARY_DIR -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TOOLCHAIN_FILE_DIR/vcpkg.cmake -DENABLE_PERFORMANCE_TESTS=FALSE -DBENCHMARK_ENABLE_GTEST_TESTS=FALSE -DBENCHMARK_ENABLE_TESTING=FALSE -DCMAKE_CROSSCOMPILING=1 -DRUN_HAVE_STD_REGEX=0 -DRUN_HAVE_POSIX_REGEX=0 && log_info "Building..." && cmake --build $CMAKE_BINARY_DIR --config $CMAKE_BUILD_TYPE --parallel 6 && log_info "Testing..." &&
-    ctest --test-dir $CMAKE_BINARY_DIR -C $CMAKE_BUILD_TYPE || log_error "Building or Testing - FAILED"
-
-echo ""
-log_trace "Building and Testing - DONE"
-log_info "Building and Testing succeeded!"
-echo ""
-
-exit 0
+# return to previous cwd
+cd - 1> pre-commit.log
+rm pre-commit.log

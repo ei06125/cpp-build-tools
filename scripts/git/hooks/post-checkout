@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# =============================================================================
+# Fun Fact: we can use the following shebang line for cross-compiling:
+# /* #!/bin/sh; C:/Program\ Files/path/to/Git/usr/bin/sh.exe */
+# according to https://www.youtube.com/watch?v=fMYv6-SZsSo
+# =============================================================================
+
+git_dir=$(git rev-parse --show-toplevel)
+cd $git_dir 1>post-checkout.log
+source $(pwd)/tools/scripts/utils/logger.sh
+cd - 1> post-checkout.log
+rm post-checkout.log
+
+log_info "Running post-checkout hook..."
+
+# =============================================================================
+# Clean up
+# =============================================================================
+
+# return to previous cwd
+cd - 1> post-checkout.log
+rm post-checkout.log

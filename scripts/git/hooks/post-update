@@ -5,8 +5,20 @@
 #
 # To enable this hook, rename this file to "post-update".
 
+git_dir=$(git rev-parse --show-toplevel)
+cd $git_dir 1>post-update.log
 source $(pwd)/tools/scripts/utils/logger.sh
+cd - 1> post-update.log
+rm post-update.log
 
 log_info "Running post-update hook..."
 
 # exec git update-server-info
+
+# =============================================================================
+# Clean up
+# =============================================================================
+
+# return to previous cwd
+cd - 1> post-update.log
+rm post-update.log

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # =============================================================================
 # Fun Fact: we can use the following shebang line for cross-compiling:
@@ -6,25 +6,61 @@
 # according to https://www.youtube.com/watch?v=fMYv6-SZsSo
 # =============================================================================
 
+# ============================================================================
+# Script setup
+# ============================================================================
+
+# navigate to project root directory
+git_dir=$(git rev-parse --show-toplevel)
+cd $git_dir 1>pre-push.log
+# add logger to the scope
 source $(pwd)/tools/scripts/utils/logger.sh
 
 log_info "Running pre-push hook..."
 
 # =============================================================================
-# Generate, Build and Test with cmake
+# Assert that git user's email is valid (under the company's domain)
 # =============================================================================
 
-CMAKE_TOOLCHAIN_FILE_DIR=$(pwd)/tools/vcpkg/scripts/buildsystems
-CMAKE_BINARY_DIR=build/CI
-CMAKE_BUILD_TYPE=Release
+# change `domain` to use your company's domain
+domain="outlook.com"
+usermail=$(git config user.email)
+if [[ "$usermail" != *"@$domain" ]]; then
+    log_fatal "Invalid username: $usermail! Please config git to use your company's email address."
+    exit 1
+fi
 
-log_trace "Building and Testing..."
-log_info "Generating build system..." && cmake -S . -B $CMAKE_BINARY_DIR -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TOOLCHAIN_FILE_DIR/vcpkg.cmake -DENABLE_PERFORMANCE_TESTS=FALSE -DBENCHMARK_ENABLE_GTEST_TESTS=FALSE -DBENCHMARK_ENABLE_TESTING=FALSE -DCMAKE_CROSSCOMPILING=1 -DRUN_HAVE_STD_REGEX=0 -DRUN_HAVE_POSIX_REGEX=0 && log_info "Building..." && cmake --build $CMAKE_BINARY_DIR --config $CMAKE_BUILD_TYPE --clean-first --parallel 6 && log_info "Testing..." &&
-    ctest --test-dir $CMAKE_BINARY_DIR -C $CMAKE_BUILD_TYPE || log_error "Building or Testing - FAILED"
+# We could also check if the username is within a list of names
 
-echo ""
-log_trace "Building and Testing - DONE"
-log_info "Building and Testing succeeded!"
-echo ""
+# =============================================================================
+# Clean
+# =============================================================================
 
-exit 0
+log_warn "Saving to stash"
+git stash -u
+
+# =============================================================================
+# Run All Tests With Clean Build
+# =============================================================================
+
+$(pwd)/tools/scripts/utils/runTests.sh -f
+if [[ "$?" != 0 ]]; then
+    log_error "pre-push tests - FAILED"
+    exit 1
+else
+    log_info "pre-push tests - DONE"
+fi
+
+# =============================================================================
+# Clean up
+# =============================================================================
+
+# return to previous cwd
+cd - 1> pre-push.log
+rm pre-push.log
+
+GIT_STASH_LIST=`git stash list`
+if [[ "$GIT_STASH_LIST" != "" ]]; then
+    log_warn "Loading from stash"
+    git stash pop
+fi
