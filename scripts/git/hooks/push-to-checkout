@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Cause the script to exit immediately if a command returns a non-zero exit status (indicating an error)
-set -e
-
 # =============================================================================
 # Fun Fact: we can use the following shebang line for cross-compiling:
 # /* #!/bin/bash; C:/Program\ Files/path/to/Git/usr/bin/sh.exe */
