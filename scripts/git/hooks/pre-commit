@@ -86,9 +86,9 @@ fi
 # =============================================================================
 
 if [[ $CLEAN_BUILD != 0 ]]; then
-    $(pwd)/tools/scripts/utils/runTests.sh -f
+    $(pwd)/tools/scripts/git/utils/runTests.sh -f
 else
-    $(pwd)/tools/scripts/utils/runTests.sh
+    $(pwd)/tools/scripts/git/utils/runTests.sh
 fi
 
 if [[ "$?" != 0 ]]; then

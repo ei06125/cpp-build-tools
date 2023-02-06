@@ -46,7 +46,7 @@ git stash -u
 # Run All Tests With Clean Build
 # =============================================================================
 
-$(pwd)/tools/scripts/utils/runTests.sh -f
+$(pwd)/tools/scripts/git/utils/runTests.sh -f
 if [[ "$?" != 0 ]]; then
     log_error "pre-push tests - FAILED"
     exit 1
