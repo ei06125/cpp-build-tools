@@ -97,9 +97,9 @@ fi
 # =============================================================================
 
 if [[ $CLEAN_BUILD != 0 ]]; then
-    ${PROJECT_ROOT_DIR}/tools/scripts/git/utils/runTests.sh -f
+    ${PROJECT_ROOT_DIR}/tools/scripts/utils/runTests.sh -f
 else
-    ${PROJECT_ROOT_DIR}/tools/scripts/git/utils/runTests.sh
+    ${PROJECT_ROOT_DIR}/tools/scripts/utils/runTests.sh
 fi
 
 if [[ "$?" != 0 ]]; then
