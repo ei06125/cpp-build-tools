@@ -84,12 +84,12 @@ function log_debug() {
 
 function log_info() {
     THIS_SCRIPT=${0##*/}
-    log_message "$Green[$THIS_SCRIPT][INFO]  $1 $Color_Off"
+    log_message "$Green[$THIS_SCRIPT][INFO] $1 $Color_Off"
 }
 
 function log_warn() {
     THIS_SCRIPT=${0##*/}
-    log_message "$Yellow[$THIS_SCRIPT][WARN]  $1 $Color_Off"
+    log_message "$Yellow[$THIS_SCRIPT][WARN] $1 $Color_Off"
 }
 
 function log_error() {
