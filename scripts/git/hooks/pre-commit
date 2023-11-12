@@ -12,9 +12,8 @@
 
 # get the directory where the script is located
 THIS_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-
 # import git utilities
-GIT_UTILITIES_SCRIPT_PATH=$THIS_SCRIPT_DIR/../git/utils/utilities.sh
+GIT_UTILITIES_SCRIPT_PATH=$THIS_SCRIPT_DIR/../utils/utilities.sh
 test -f $GIT_UTILITIES_SCRIPT_PATH || (echo "File not found: $GIT_UTILITIES_SCRIPT_PATH" && exit 1)
 source $GIT_UTILITIES_SCRIPT_PATH || (echo "Failed to source $GIT_UTILITIES_SCRIPT_PATH" && exit 1)
 
@@ -98,9 +97,9 @@ fi
 # =============================================================================
 
 if [[ $CLEAN_BUILD != 0 ]]; then
-    $(pwd)/tools/scripts/git/utils/runTests.sh -f
+    ${PROJECT_ROOT_DIR}/tools/scripts/git/utils/runTests.sh -f
 else
-    $(pwd)/tools/scripts/git/utils/runTests.sh
+    ${PROJECT_ROOT_DIR}/tools/scripts/git/utils/runTests.sh
 fi
 
 if [[ "$?" != 0 ]]; then

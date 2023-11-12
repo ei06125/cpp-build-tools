@@ -14,7 +14,7 @@
 THIS_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
 # import git utilities
-GIT_UTILITIES_SCRIPT_PATH=$THIS_SCRIPT_DIR/../git/utils/utilities.sh
+GIT_UTILITIES_SCRIPT_PATH=$THIS_SCRIPT_DIR/../git/utilities.sh
 test -f $GIT_UTILITIES_SCRIPT_PATH || (echo "File not found: $GIT_UTILITIES_SCRIPT_PATH" && exit 1)
 source $GIT_UTILITIES_SCRIPT_PATH || (echo "Failed to source $GIT_UTILITIES_SCRIPT_PATH" && exit 1)
 
