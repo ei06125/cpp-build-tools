@@ -21,6 +21,7 @@ set(cpp_standard_library_pch
     <span>
     <string_view>
     <string>
+    <sstream>
     <thread>
     <vector>
 )

@@ -26,7 +26,7 @@ fi
 source ${PROJECT_ROOT_DIR}/tools/scripts/utils/logger.sh
 
 log_info "Testing MacOS Continuous Integration"
-log_info "Building DEBUG configuration"
+log_info "Building macos-clang-debug configuration"
 cd ${PROJECT_ROOT_DIR}
 cmake --preset=macos-clang-debug -B out/build/macos-clang-debug
 cd out/build/macos-clang-debug
@@ -37,7 +37,7 @@ log_info "Running unit tests"
 log_info "Running main tests"
 ./myproject_main_tests
 
-log_info "Building DEVELOPMENT configuration"
+log_info "Building macos-clang-dev configuration"
 cd ${PROJECT_ROOT_DIR}
 cmake --preset=macos-clang-dev -B out/build/macos-clang-dev
 cd out/build/macos-clang-dev
@@ -48,10 +48,44 @@ log_info "Running unit tests"
 log_info "Running main tests"
 ./myproject_main_tests
 
-log_info "Building DISTRIBUTION configuration"
+log_info "Building macos-clang-release configuration"
 cd ${PROJECT_ROOT_DIR}
 cmake --preset=macos-clang-release -B out/build/macos-clang-release
 cd out/build/macos-clang-release
+cmake --build . --config Release --target RUN_ALL_TARGETS
+# sleep 2 # sleeping for 2 seconds
+log_info "Running unit tests"
+./myproject_unit_tests
+# sleep 2 # sleeping for 2 seconds
+log_info "Running main tests"
+./myproject_main_tests
+
+log_info "Building macos-gcc-debug configuration"
+cd ${PROJECT_ROOT_DIR}
+cmake --preset=macos-gcc-debug -B out/build/macos-gcc-debug
+cd out/build/macos-gcc-debug
+cmake --build . --config Debug --target RUN_ALL_TARGETS
+# sleep 2 # sleeping for 2 seconds
+log_info "Running unit tests"
+./myproject_unit_tests
+log_info "Running main tests"
+./myproject_main_tests
+
+log_info "Building macos-gcc-dev configuration"
+cd ${PROJECT_ROOT_DIR}
+cmake --preset=macos-gcc-dev -B out/build/macos-gcc-dev
+cd out/build/macos-gcc-dev
+cmake --build . --config Development --target RUN_ALL_TARGETS
+# sleep 2 # sleeping for 2 seconds
+log_info "Running unit tests"
+./myproject_unit_tests
+log_info "Running main tests"
+./myproject_main_tests
+
+log_info "Building macos-gcc-release configuration"
+cd ${PROJECT_ROOT_DIR}
+cmake --preset=macos-gcc-release -B out/build/macos-gcc-release
+cd out/build/macos-gcc-release
 cmake --build . --config Release --target RUN_ALL_TARGETS
 # sleep 2 # sleeping for 2 seconds
 log_info "Running unit tests"
@@ -66,3 +100,6 @@ cd ${PROJECT_ROOT_DIR}
 rm -rf out/build/macos-clang-debug
 rm -rf out/build/macos-clang-dev
 rm -rf out/build/macos-clang-release
+rm -rf out/build/macos-gcc-debug
+rm -rf out/build/macos-gcc-dev
+rm -rf out/build/macos-gcc-release
