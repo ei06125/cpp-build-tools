@@ -1,46 +1,130 @@
 #!/bin/bash
 
-# get the directory where the script is located
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Environmental Settings
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# import git utilities
-GIT_UTILITIES_SCRIPT_PATH=$SCRIPT_DIR/../git/utils/utilities.sh
-test -f $GIT_UTILITIES_SCRIPT_PATH || (echo "File not found: $GIT_UTILITIES_SCRIPT_PATH" && exit 1)
-source $GIT_UTILITIES_SCRIPT_PATH || (echo "Failed to source $GIT_UTILITIES_SCRIPT_PATH" && exit 1)
+# ===========================================================================
+# Constants
+# ===========================================================================
+readonly __PATH__=$(realpath $0)
+readonly __DIR__=$(dirname $__PATH__)
+readonly __FILE__=$(basename $__PATH__)
 
-# detect if this tools folder is a submodule or not
-IS_SUBMODULE=$(git_is_submodule; echo $?)
+# ===========================================================================
+# Options
+# ===========================================================================
 
-# getting the root level directory of the project
-PROJECT_ROOT_DIR=$(git rev-parse --show-toplevel)
-if [[ $IS_SUBMODULE == 1 ]]; then
-    cd "${PROJECT_ROOT_DIR}/.."
-    PROJECT_ROOT_DIR=$(git rev-parse --show-toplevel)
-fi
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Command Line Variables
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+help_requested=false
+invalid_argument=false
+verbose=false
+debug=false
 
-# import logger
-source ${PROJECT_ROOT_DIR}/tools/scripts/utils/logger.sh
-
-while getopts 'v' flag;
-do
-    case "${flag}" in
-        v)
-            echo "VERBOSE"
-            CMAKE_CURRENT_LOG_LEVEL=CMAKE_LOG_LEVEL_TRACE
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Argument Parsing
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+while [[ $# -gt 0 ]]; do
+    case $1 in
+    -h | --help)
+        help_requested=true
+        shift # past argument
         ;;
-        ?)
-            echo "script usage: $(basename \$0) [-v]" >&2
-            exit 1
+    -v | --verbosea)
+        verbose=true
+        shift # past argument
+        ;;
+    -d | --debug)
+        debug=true
+        shift # past argument
+        ;;
+    ? | *)
+        invalid_argument=true
+        help_requested=true
+        shift
         ;;
     esac
 done
 
-log_trace "Testing LOG TRACE"
-log_debug "Testing LOG DEBUG"
-log_info "Testing LOG INFO"
-log_warn "Testing LOG WARN"
-log_error "Testing LOG ERROR"
-log_fatal "Testing LOG FATAL"
+readonly VERBOSE=$verbose
+readonly DEBUG=$debug
 
-# will not print this message
-log_info "Exiting..."
+# ===========================================================================
+# Imports
+# ===========================================================================
+source "$__DIR__/logger.sh"
+
+# ===========================================================================
+# Helper Functions
+# ===========================================================================
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Logging Customization
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# ---------------------------------------------------------------------------
+LOG_TRACE() {
+    if $VERBOSE; then
+        CORE_LOG_TRACE "[$__FILE__] $1"
+    else
+        CORE_LOG_TRACE "$1"
+    fi
+}
+
+# ---------------------------------------------------------------------------
+LOG_DEBUG() {
+    if $VERBOSE; then
+        CORE_LOG_DEBUG "[$__FILE__] $1"
+    else
+        CORE_LOG_DEBUG "$1"
+    fi
+}
+
+# ---------------------------------------------------------------------------
+LOG_INFO() {
+    if $VERBOSE; then
+        CORE_LOG_INFO "[$__FILE__] $1"
+    else
+        CORE_LOG_INFO "$1"
+    fi
+}
+
+# ---------------------------------------------------------------------------
+LOG_WARN() {
+    if $VERBOSE; then
+        CORE_LOG_WARN "[$__FILE__] $1"
+    else
+        CORE_LOG_WARN "$1"
+    fi
+}
+
+# ---------------------------------------------------------------------------
+LOG_ERROR() {
+    if $VERBOSE; then
+        CORE_LOG_ERROR "[$__FILE__] $1"
+    else
+        CORE_LOG_ERROR "$1"
+    fi
+}
+
+# ---------------------------------------------------------------------------
+LOG_FATAL() {
+    if $VERBOSE; then
+        CORE_LOG_FATAL "[$__FILE__] $1"
+    else
+        CORE_LOG_FATAL "$1"
+    fi
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Script Entrypoint
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+LOG_TRACE "This is a trace message."
+LOG_DEBUG "This is a debug message."
+LOG_INFO "This is an info message."
+LOG_WARN "This is a warning message."
+LOG_ERROR "This is an error message."
+LOG_FATAL "This is a fatal message."

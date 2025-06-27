@@ -1,104 +1,201 @@
 #!/bin/bash
 
-# =============================================================================
-# Color Definitions
-# see also: https://stackoverflow.com/questions/5947742/how-to-change-the-output-color-of-echo-in-linux
-# =============================================================================
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Base Settings
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# Reset
-Color_Off='\033[0m' # Text Reset
+# ===========================================================================
+# Constants
+# ===========================================================================
 
-# Regular Colors
-Black='\033[0;30m'  # Black
-Red='\033[0;31m'    # Red
-Green='\033[0;32m'  # Green
-Yellow='\033[0;33m' # Yellow
-Blue='\033[0;34m'   # Blue
-Purple='\033[0;35m' # Purple
-Cyan='\033[0;36m'   # Cyan
-White='\033[0;37m'  # White
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ANSI color codes
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+COLOR_BOLD_WHITE="\033[1;37m"
+COLOR_CYAN="\033[0;36m"
+COLOR_GREEN="\033[0;32m"
+COLOR_YELLOW="\033[0;33m"
+COLOR_RED="\033[0;31m"
+COLOR_BOLD_WHITE_BG_RED="\033[1;37;41m"
+COLOR_RESET="\033[0m"
 
-# Bold
-BBlack='\033[1;30m'  # Black
-BRed='\033[1;31m'    # Red
-BGreen='\033[1;32m'  # Green
-BYellow='\033[1;33m' # Yellow
-BBlue='\033[1;34m'   # Blue
-BPurple='\033[1;35m' # Purple
-BCyan='\033[1;36m'   # Cyan
-BWhite='\033[1;37m'  # White
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Log Levels
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+LOG_LEVEL_TRACE=0
+LOG_LEVEL_DEBUG=1
+LOG_LEVEL_INFO=2
+LOG_LEVEL_WARN=3
+LOG_LEVEL_ERROR=4
+LOG_LEVEL_FATAL=5
 
-# Underline
-UBlack='\033[4;30m'  # Black
-URed='\033[4;31m'    # Red
-UGreen='\033[4;32m'  # Green
-UYellow='\033[4;33m' # Yellow
-UBlue='\033[4;34m'   # Blue
-UPurple='\033[4;35m' # Purple
-UCyan='\033[4;36m'   # Cyan
-UWhite='\033[4;37m'  # White
+BANNER_SECTION=$(printf '%*s\n' 80 | tr ' ' '%')
+BANNER_SUBSECTION=$(printf '%*s\n' 80 | tr ' ' '=')
+BANNER_SUBSUBSECTION=$(printf '%*s\n' 80 | tr ' ' '~')
 
-# Background
-On_Black='\033[40m'  # Black
-On_Red='\033[41m'    # Red
-On_Green='\033[42m'  # Green
-On_Yellow='\033[43m' # Yellow
-On_Blue='\033[44m'   # Blue
-On_Purple='\033[45m' # Purple
-On_Cyan='\033[46m'   # Cyan
-On_White='\033[47m'  # White
+# ===========================================================================
+# Variables
+# ===========================================================================
 
-# =============================================================================
-# Log Level Definitions
-# =============================================================================
+# Affects logging output (sets to LOG_LEVEL_TRACE). Bypasses --log-level
+# Change with --verbose command line argument
+verbose=false
 
-export CMAKE_LOG_LEVEL_TRACE=2
-export CMAKE_LOG_LEVEL_DEBUG=3
-export CMAKE_LOG_LEVEL_INFO=4
-export CMAKE_LOG_LEVEL_WARN=5
-export CMAKE_LOG_LEVEL_ERROR=6
+# Affects logging output (sets to LOG_LEVEL_DEBUG) Bypasses --log-level
+# Change with --debug command line argument
+debugging=false
 
-CMAKE_CURRENT_LOG_LEVEL=$CMAKE_LOG_LEVEL_INFO
+# Affects logging output
+# Change with --log-level <LOG_LEVEL> command line argument
+current_log_level=$LOG_LEVEL_INFO
 
-# =============================================================================
-# Functions Definitions
-# =============================================================================
+# If `true`, it will call test_logging at the end of the script
+test_logger=false
 
-function log_message() {
-    echo -e "$1"
+# ===========================================================================
+# Helper functions
+# ===========================================================================
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Usage Function
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+usage() {
+    printf "${COLOR_BOLD_WHITE}Usage:${COLOR_RESET} $0 [options]"
+    printf "Options:"
+    printf "  ${COLOR_CYAN}--verbose${COLOR_RESET}            Enable verbose logging (sets log level to TRACE)."
+    printf "  ${COLOR_CYAN}--debug${COLOR_RESET}              Enable debug logging (sets log level to DEBUG)."
+    printf "  ${COLOR_CYAN}--log-level <LEVEL>${COLOR_RESET}  Set log level (TRACE=0, DEBUG=1, INFO=2, WARN=3, ERROR=4, FATAL=5)."
+    printf "  ${COLOR_CYAN}--test-logger${COLOR_RESET}        Run test logger messages."
+    printf "  ${COLOR_CYAN}-h, --help${COLOR_RESET}           Display this help message and exit."
+    exit 0
 }
 
-function log_trace() {
-    if [[ $CMAKE_CURRENT_LOG_LEVEL -le $CMAKE_LOG_LEVEL_TRACE ]]; then
-        THIS_SCRIPT=${0##*/}
-        log_message "$BWhite[$THIS_SCRIPT][TRACE] $1 $Color_Off"
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Logging Functions
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# ---------------------------------------------------------------------------
+# Function to set log level based on user input
+set_log_level() {
+    case "$1" in
+    $LOG_LEVEL_TRACE) current_log_level=$LOG_LEVEL_TRACE ;;
+    $LOG_LEVEL_DEBUG) current_log_level=$LOG_LEVEL_DEBUG ;;
+    $LOG_LEVEL_INFO) current_log_level=$LOG_LEVEL_INFO ;;
+    $LOG_LEVEL_WARN) current_log_level=$LOG_LEVEL_WARN ;;
+    $LOG_LEVEL_ERROR) current_log_level=$LOG_LEVEL_ERROR ;;
+    $LOG_LEVEL_FATAL) current_log_level=$LOG_LEVEL_FATAL ;;
+    *)
+        echo "Unknown log level: $1"
+        exit 1
+        ;;
+    esac
+}
+
+get_log_level() {
+    echo "$current_log_level"
+}
+
+# ---------------------------------------------------------------------------
+# Function to log messages based on the current log level
+log_message() {
+    local level=$1
+    local message=$2
+    if [ "$current_log_level" -le "$level" ]; then
+        echo -e "$message"
     fi
 }
 
-function log_debug() {
-    if [[ $CMAKE_CURRENT_LOG_LEVEL -le $CMAKE_LOG_LEVEL_DEBUG ]]; then
-        THIS_SCRIPT=${0##*/}
-        log_message "$Cyan[$THIS_SCRIPT][DEBUG] $1 $Color_Off"
+# ---------------------------------------------------------------------------
+# NOTE(PO): even if log-level is 0 (trace), you need to pass verbose
+CORE_LOG_TRACE() {
+    if "$VERBOSE" = true; then
+        log_message $LOG_LEVEL_TRACE "${COLOR_BOLD_WHITE}[T] $1${COLOR_RESET}"
     fi
 }
 
-function log_info() {
-    THIS_SCRIPT=${0##*/}
-    log_message "$Green[$THIS_SCRIPT][INFO] $1 $Color_Off"
+# ---------------------------------------------------------------------------
+CORE_LOG_DEBUG() {
+    log_message $LOG_LEVEL_DEBUG "${COLOR_CYAN}[D] $1${COLOR_RESET}"
 }
 
-function log_warn() {
-    THIS_SCRIPT=${0##*/}
-    log_message "$Yellow[$THIS_SCRIPT][WARN] $1 $Color_Off"
+# ---------------------------------------------------------------------------
+CORE_LOG_INFO() {
+    log_message $LOG_LEVEL_INFO "${COLOR_GREEN}[I] $1${COLOR_RESET}"
 }
 
-function log_error() {
-    THIS_SCRIPT=${0##*/}
-    log_message "$Red[$THIS_SCRIPT][ERROR] $1 $Color_Off"
+# ---------------------------------------------------------------------------
+CORE_LOG_WARN() {
+    log_message $LOG_LEVEL_WARN "${COLOR_YELLOW}[W] $1${COLOR_RESET}"
 }
 
-function log_fatal() {
-    THIS_SCRIPT=${0##*/}
-    log_message "$On_Red[$THIS_SCRIPT][FATAL] $1$Color_Off"
+# ---------------------------------------------------------------------------
+CORE_LOG_ERROR() {
+    log_message $LOG_LEVEL_ERROR "${COLOR_RED}[E] $1${COLOR_RESET}"
+}
+
+# ---------------------------------------------------------------------------
+CORE_LOG_FATAL() {
+    log_message $LOG_LEVEL_FATAL "${COLOR_BOLD_WHITE_BG_RED}[F] $1${COLOR_RESET}"
     exit 1
 }
+
+# ---------------------------------------------------------------------------
+test_logging() {
+    CORE_LOG_TRACE "This is a trace message."
+    CORE_LOG_DEBUG "This is a debug message."
+    CORE_LOG_INFO "This is an info message."
+    CORE_LOG_WARN "This is a warning message."
+    CORE_LOG_ERROR "This is an error message."
+    CORE_LOG_FATAL "This is a fatal message."
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Script Entrypoint
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+# ===========================================================================
+# Parse command-line arguments
+# ===========================================================================
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+    --test-logger)
+        VERBOSE=true
+        set_log_level 0
+        test_logging
+        shift # past argument
+        ;;
+    esac
+done
+
+if [ -z "${VERBOSE+x}" ]; then
+  VERBOSE=$verbose
+#   echo "VERBOSE is not defined"
+# else
+#   echo "VERBOSE is defined"
+#   echo "VERBOSE: $VERBOSE"
+fi
+
+if [ -z "${DEBUG+x}" ]; then
+  DEBUG=$debugging
+#   echo "DEBUG is not defined"
+# else
+#   echo "DEBUG is defined"
+#   echo "DEBUG: $DEBUG"
+fi
+
+if $DEBUG ; then
+    set_log_level "$LOG_LEVEL_DEBUG"
+fi
+
+if $VERBOSE; then
+    set_log_level "$LOG_LEVEL_TRACE"
+fi
+
+CORE_LOG_TRACE "[CORE][logger.sh] Trace is active"
+CORE_LOG_DEBUG "[CORE][logger.sh] Debug is active"
+
+if [ "$test_logger" = true ]; then
+    test_logging
+fi
